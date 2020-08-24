@@ -9,8 +9,15 @@ define('APP_ROOT',realpath($_SERVER['DOCUMENT_ROOT']));
 
 class BootStrap
 {
-    public function Web(){}
+    public function Web(){
+        self::init();
+    }
     static function Run(){
+        self::init();
+    }
+
+
+    private static function init(){
         spl_autoload_register('\Ghf\BootStrap::LoadClass');
     }
 

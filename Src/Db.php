@@ -28,6 +28,14 @@ class Db
 
     }
 
+
+    static function getCon($conName){
+        static $selfs = [];
+        if(!isset($selfs[$conName])){
+            $selfs[$conName] = new self($conName);
+        }
+        return $selfs[$conName];
+    }
     /**
      * 使用事务
      * @auth 耿鸿飞 <15911185633>
@@ -47,6 +55,10 @@ class Db
             $this->pdo->rollBack();
             return false;
         }
+    }
+
+    public function getQuery($tableName){
+        return new DbQuery($this->pdo,$tableName);
     }
 }
 

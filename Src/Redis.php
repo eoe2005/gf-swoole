@@ -4,7 +4,7 @@
 namespace Ghf;
 
 
-use Mockery\Exception;
+
 
 class Redis
 {

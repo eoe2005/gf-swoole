@@ -105,6 +105,7 @@ class DbQuery
         try{
             $st = $this->pdo->prepare($sql);
             $st->execute($this->args);
+            Log::Debug($sql,json_encode($this->args));
             return $st;
         }catch (\Exception $e){
             Error::errorMsg(1002,'查询数据失败',$e);
