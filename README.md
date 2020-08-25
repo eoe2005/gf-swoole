@@ -25,7 +25,45 @@ include "../Src/BootStrap.php";
 ## 数据库使用
 
 ## Cache使用
+```php
+$redis = \Ghf\Redis::getCon();
+$data = \Ghf\Redis::GetCache("key",function(){
+    return 123;
+},30);
+$redis->set($k,$v,$timeout)
+$redis->get($key)
+...
+```
 
 ## 项目配置
+```ini
+# 数据库配置
+db.default.host=127.0.0.1
+db.default.prot=3306
+db.default.user=root
+db.default.passwd=usbw
+db.default.dbname=pets
+db.default.pretable=t_
+
+# 缓存配置
+redis.default.host=
+redis.default.port=
+redis.default.auth=
+redis.default.db=0
+```
 
 ## 日志系统
+
+```php
+\Ghf\Log::Debug("debug ");
+\Ghf\Log::Debug("debug %s","测试");
+
+\Ghf\Log::Error("Error ");
+\Ghf\Log::Error("Error %s","测试");
+
+\Ghf\Log::Info("Info ");
+\Ghf\Log::Info("Info %s","测试");
+
+\Ghf\Log::Sql("Sql ");
+\Ghf\Log::Sql("Sql %s","测试");
+```

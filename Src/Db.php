@@ -9,6 +9,9 @@ class Db
     protected $pdo;
     public function __construct($conName = 'default')
     {
+        $this->initDb($conName);
+    }
+    private function initDb($conName = 'default'){
         $conf = Conf::GetArr('db.'.$conName,[
             'host' => '127.0.0.1',
             'port' => 3306,
@@ -25,7 +28,6 @@ class Db
         }catch (\Exception $e){
             Error::errorMsg(10201,"链接数据库失败",$e);
         }
-
     }
 
 
