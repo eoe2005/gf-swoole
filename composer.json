@@ -1,0 +1,12 @@
+{
+    "name": "ghf/gf-swoole",
+    "description": "针对swoole提供的一个快速开发框架",
+    "type": "library",
+    "authors": [
+        {
+            "name": "大飞哥",
+            "email": "eoe2005@qq.com"
+        }
+    ],
+    "require": {}
+}
