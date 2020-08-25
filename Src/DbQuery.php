@@ -13,12 +13,12 @@ class DbQuery
     private $order = '';
     private $group = '';
     private $having = '';
-    private $pdo;
+    private $db;
     private $index = 0;
-    public function __construct(\PDO $pdo,$tableName)
+    public function __construct(Db $db,$tableName)
     {
         $this->tableName = $tableName;
-        $this->pdo = $pdo;
+        $this->db = $db;
     }
 
     public function where($k,$v){
@@ -61,7 +61,7 @@ class DbQuery
             $this->having,
             $this->order,
             'LIMIT 1');
-        $st = $this->query($sql);
+        $st = $this->db->query($sql);
         $row = $st->fetch(\PDO::FETCH_ASSOC);
         $st->closeCursor();
         return $row;
@@ -75,7 +75,7 @@ class DbQuery
             $this->having,
             $this->order,
             $this->limit);
-        $st = $this->query($sql);
+        $st = $this->db->query($sql);
         $list = $st->fetchAll(\PDO::FETCH_ASSOC);
         $st->closeCursor();
         return $list;
@@ -85,7 +85,7 @@ class DbQuery
             Error::errorMsg(1101,"没有WHERE，禁止删除");
         }
         $sql = sprintf('DELETE FROM `%s` WHERE %s',$this->tableName,$this->where);
-        $st = $this->query($sql);
+        $st = $this->db->query($sql);
         return $st->rowCount();
     }
     public function update($data){
@@ -97,20 +97,11 @@ class DbQuery
             $sets[] = sprintf('`%s`=>%s',$k,$this->buildKey($k,$v));
         }
         $sql = sprintf('UPDATE `%s` SET %s WHERE %s %s %s',$this->tableName,implode(',',$sets),$this->where,$this->order,$this->limit);
-        $st = $this->query($sql);
+        $st = $this->db->query($sql);
         return $st->rowCount();
     }
 
-    public function query($sql){
-        try{
-            $st = $this->pdo->prepare($sql);
-            $st->execute($this->args);
-            Log::Debug($sql,json_encode($this->args));
-            return $st;
-        }catch (\Exception $e){
-            Error::errorMsg(1002,'查询数据失败',$e);
-        }
-    }
+
 
     private function buildKey($k,$v){
         $k = ':'.$k.$this->index;

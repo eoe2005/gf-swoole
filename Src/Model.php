@@ -84,4 +84,23 @@ abstract class Model
     protected function createQuery(){
         return $this->db->getQuery($this->getTable());
     }
+
+    /**
+     * 插入数据
+     * @auth 耿鸿飞 <15911185633>
+     * @date 2020/8/25 14:18
+     * @param $data
+     * @return int|string
+     */
+    public function insert($data){
+        $keys = [];
+        $args = [];
+        foreach ($data as $k=>$v){
+            $key = ':'.$k;
+            $keys[] = $key;
+            $args[$key] = $v;
+        }
+        $sql = sprintf('INSERT INTO `%s`(`%s`) VALUES(%s)',$this->getTable(),implode('`,`',array_keys($data)),implode(',',$keys));
+        return $this->db->insert($sql,$args);
+    }
 }

@@ -3,4 +3,4 @@
 
 include "../Src/BootStrap.php";
 
-\Ghf\BootStrap::Run();
+\Ghf\BootStrap::Web();

@@ -6,7 +6,7 @@ namespace Ghf;
 
 abstract class Action
 {
-    private $_params = [];
+    protected $_params = [];
     abstract function handle();
     public function execute($params = []){
         $this->_params = $params;

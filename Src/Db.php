@@ -29,7 +29,7 @@ class Db
     }
 
 
-    static function getCon($conName){
+    static function getCon($conName = 'default'){
         static $selfs = [];
         if(!isset($selfs[$conName])){
             $selfs[$conName] = new self($conName);
@@ -58,7 +58,60 @@ class Db
     }
 
     public function getQuery($tableName){
-        return new DbQuery($this->pdo,$tableName);
+        return new DbQuery($this,$tableName);
+    }
+
+    public function query($sql,$args = [],$isRetry = 0){
+        try{
+            $st = $this->pdo->prepare($sql);
+            $st->execute($args);
+            Log::Debug('SQL -> %s (%s)',$sql,json_encode($args));
+            return $st;
+        }catch (\Exception $e){
+
+        }
+
+    }
+    public function fetchRow($sql,$args){
+        if(!is_array($args)){
+            $sql = call_user_func_array('sprintf',func_get_args());
+            $args = [];
+        }
+        $st = $this->query($sql,$args);
+        $row = $st->fetch(\PDO::FETCH_ASSOC);
+        $st->closeCursor();
+        return $row;
+    }
+    public function fetchAll($sql,$args){
+        if(!is_array($args)){
+            $sql = call_user_func_array('sprintf',func_get_args());
+            $args = [];
+        }
+        $st = $this->query($sql,$args);
+        $row = $st->fetchAll(\PDO::FETCH_ASSOC);
+        $st->closeCursor();
+        return $row;
+    }
+    public function update($sql,$args){
+        if(!is_array($args)){
+            $sql = call_user_func_array('sprintf',func_get_args());
+            $args = [];
+        }
+        $st = $this->query($sql,$args);
+        $row = $st->rowCount();
+        return $row;
+    }
+    public function insert($sql,$args){
+        if(!is_array($args)){
+            $sql = call_user_func_array('sprintf',func_get_args());
+            $args = [];
+        }
+        $st = $this->query($sql,$args);
+        $row = $st->rowCount();
+        if($row){
+            return $this->pdo->lastInsertId();
+        }
+        return 0;
     }
 }
 
