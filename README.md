@@ -21,8 +21,56 @@ include "../Src/BootStrap.php";
 ```
 
 ## action描述
-
+1. 命名空间 App\Action
+2. 继承 \Ghf\Action
+3. 获取参数  $this->getParam('key','')
+4. 参数使用前可以校验 
+```php
+function paramsRule(){
+        return [
+        'uid' => 'required:int',
+        'start' => 'required|date',
+        'end' => 'required|time',
+        'datetime' => 'datetime',
+        'tag' => 'required|array'
+        ];
+    }
+5. 错误处理 return $this->fail(123,"系统错误")
+6. 正常直接 return []
+```
 ## 数据库使用
+### 使用事务
+```php
+\Ghf\Db::getCon()->begin(function(){
+    正常业务逻辑，回滚的话直接抛出异常即可
+});
+
+Model 中方法同上
+
+```
+### 直接使用sql
+```php
+
+$db = \Ghf\Db::getCon();
+$list = $db->fetchAll("select * from test wehre a=:a and b=:b",[':a' => 1,':b' => 2]);
+$list1 = $db->fetchAll("select * from test wehre a=? and b=?",[1,2]);
+$list2 = $db->fetchAll("select * from test wehre a=%d and b=%d",1,2);
+
+$row = $db->fetchRow("select * from test wehre a=:a and b=:b",[':a' => 1,':b' => 2]);
+$row1 = $db->fetchRow("select * from test wehre a=? and b=?",[1,2]);
+$row2 = $db->fetchRow("select * from test wehre a=%d and b=%d",1,2);
+
+$inserId = $db->insert("insert into test(a,b,c) VALUES(:a,:b,:c)",[':a' => 1,':b' => 2,":c" => 3]);
+$inserId1 = $db->insert("insert into test(a,b,c) VALUES(?,?,?)",[1,2,3]);
+$inserId2 = $db->insert("insert into test(a,b,c) VALUES(%d,%d,%d)",1,2,3);
+
+$upCount = $db->update("UPDATE test set a=:a where b=:b",[':a' => 1,':b' => 2]);
+$upCount1 = $db->update("UPDATE test set a=? where b=?",[1,2]);
+$upCount2 = $db->update("UPDATE test set a=%d where b=%d",1,2);
+
+
+```
+### 使用Model
 
 ## Cache使用
 ```php

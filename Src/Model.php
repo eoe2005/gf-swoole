@@ -85,6 +85,10 @@ abstract class Model
         return $this->db->getQuery($this->getTable());
     }
 
+    public function begin($func){
+        return $this->db->begin($func);
+    }
+
     /**
      * 插入数据
      * @auth 耿鸿飞 <15911185633>
