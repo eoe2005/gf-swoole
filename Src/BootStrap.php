@@ -14,8 +14,12 @@ class BootStrap
     public function Web(){
         self::init();
         $http = new \Swoole\Http\Server('0.0.0.0', Conf::GetInt('server.port',8080));
-        $http->on('request',function (\Swoole\Http\Request $req,\Swoole\Http\Response $resp){
-            $data = self::runAction($req->server['path_info'],array_merge($req->post ?? [],$req->get ?? []));
+        $http->on('request',function (\Swoole\Http\Request $req,\Swoole\Http\Response $resp)use($http){
+            $params = array_merge($req->post ?? [],$req->get ?? []);
+            if(!isset($params['ip'])){
+                $params['ip'] = $req->server['remote_addr'];
+            }
+            $data = self::runAction($http,$req->server['path_info'],$params);
             $resp->header('Content-Type','application/json');
             $resp->write($data);
         });
@@ -25,7 +29,7 @@ class BootStrap
         self::init();
     }
 
-    private static function runAction($url,$data){
+    private static function runAction($server,$url,$data){
         $names = explode('/',$url);
         $names = array_map(function ($v){
             return ucfirst($v);
@@ -41,7 +45,7 @@ class BootStrap
         $className .= 'Action';
         if(class_exists($className)){
             try{
-                $ret = (new $className)->execute($data);
+                $ret = (new $className($server))->execute($data);
             }catch (\Exception $e){
                 $ret = [
                     'code' => 1002,
@@ -63,12 +67,30 @@ class BootStrap
     }
 
     private static function runServer($server){
+        $server->set(array('task_worker_num' => 4));
+        $server->on('task', function ($serv, $task_id, $from_id, $data) {
+            $data = json_decode($data,true);
+            $cmd = '\\App\\Task\\'.$data['cmd'].'Task';
+            if(class_exists($cmd)){
+                $ret = (new $cmd)->execute($data['data']);
+            }
+            $serv->finish("$cmd -> $ret");
+        });
+
+        //处理异步任务的结果(此回调函数在worker进程中执行)
+        $server->on('finish', function ($serv, $task_id, $data) {
+            echo "AsyncTask[$task_id] Finish: $data".PHP_EOL;
+        });
+        $server->on("Start",function ($s){
+            $name = ucfirst(basename(APP_ROOT));
+            swoole_set_process_name($name);
+        });
         $server->on('WorkerStart',function ($server, $worker_id){
-            global $argv;
+            $name = ucfirst(basename(APP_ROOT));
             if($worker_id >= $server->setting['worker_num']) {
-                swoole_set_process_name("php {$argv[0]} task worker");
+                swoole_set_process_name("$name Task");
             } else {
-                swoole_set_process_name("php {$argv[0]} event worker");
+                swoole_set_process_name("$name Event");
             }
         });
         $server->on('WorkerExit',function ($s,$w){});

@@ -6,6 +6,16 @@ namespace Ghf;
 
 abstract class Action
 {
+    protected $_server;
+    function __construct($server)
+    {
+        $this->_server = $server;
+    }
+
+    protected function task($cmd,$data){
+        $this->_server->task(json_encode(['cmd' => $cmd,'data'=>$data]));
+    }
+
     protected $_params = [];
     abstract function handle();
     public function execute($params = []){
