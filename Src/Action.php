@@ -7,9 +7,14 @@ namespace Ghf;
 abstract class Action
 {
     protected $_server;
+    protected $_session = [];
     function __construct($server)
     {
         $this->_server = $server;
+    }
+
+    protected function setSession($data){
+        $this->_session = $data;
     }
 
     protected function task($cmd,$data){
@@ -26,13 +31,20 @@ abstract class Action
         }
         $data = $this->handle();
         if(isset($data['code'])){
+            if($this->_session){
+                $data['session'] = $this->_session;
+            }
             return $data;
         }
-        return [
+        $ret =  [
             'code' => 0,
             'msg' => '',
             'data' => $data
         ];
+        if($this->_session){
+            $ret['session'] = $this->_session;
+        }
+        return $ret;
     }
 
 

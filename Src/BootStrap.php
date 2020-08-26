@@ -5,13 +5,21 @@ namespace Ghf;
 
 
 
+use function GuzzleHttp\json_encode;
+use function GuzzleHttp\Psr7\str;
+
 define('DS',DIRECTORY_SEPARATOR);
 define('GF_ROOT',realpath(__DIR__));
 define('APP_ROOT',realpath($_SERVER['DOCUMENT_ROOT']));
 
 class BootStrap
 {
-    public function Web(){
+    /**
+     * 接口服务
+     * @auth 耿鸿飞 <15911185633>
+     * @date 2020/8/26 18:33
+     */
+    public static function Web(){
         self::init();
         $http = new \Swoole\Http\Server('0.0.0.0', Conf::GetInt('server.port',8080));
         $http->on('request',function (\Swoole\Http\Request $req,\Swoole\Http\Response $resp)use($http){
@@ -27,6 +35,58 @@ class BootStrap
     }
     public function Tcp(){
         self::init();
+    }
+
+    /**
+     * 网关服务
+     * @auth 耿鸿飞 <15911185633>
+     * @date 2020/8/26 18:32
+     */
+    public static function Gw(){
+        self::init();
+        $http = new \Swoole\Http\Server('0.0.0.0', Conf::GetInt('server.port',8080));
+        $http->on('WorkerStart',function ($server, $worker_id){
+            $appNames = Conf::Get('apps','');
+            $apps = explode(',',$appNames);
+
+            $conf = [];
+            foreach ($apps as $app){
+                $conf[$app];
+            }
+            //$server->confs = $conf;
+        });
+        $http->on('request',function (\Swoole\Http\Request $req,\Swoole\Http\Response $resp){
+            $skey = 'sid';
+            $sid = $req->cookie[$skey] ?? "";
+            if(!$sid){
+                $sid = md5(time().$req->server['remote_addr']);
+                $resp->cookie($skey,$sid,86400*365);
+            }
+            $params = array_merge($req->post ?? [],$req->get ?? []);
+            $params['session'] = Redis::getCon()->hGetAll($sid);
+            $params['ip'] = $req->server['remote_addr'];
+            if($req->files){
+                $files = [];
+                foreach ($req->files as $f){
+                    $files[$f['name']] = base64_encode($f['tmp_name']);
+                }
+                $params['files'] = $files;
+            }
+            $url = $req->server['path_info'];
+            while(strpos($url,'/') === 0){
+                $url = substr($url,1);
+            }
+            $app = strstr($url,'/',true);
+            $name = substr(strstr($url,'/'),1);
+            $ret = Client::Rpc($app,$name,$params);
+            if(isset($ret['session'])){
+                Redis::getCon()->hMSet($sid,$ret['session']);
+                unset($ret['session']);
+            }
+            $resp->header('Content-Type','application/json');
+            $resp->write(json_encode($ret));
+        });
+        $http->start();
     }
 
     private static function runAction($server,$url,$data){
