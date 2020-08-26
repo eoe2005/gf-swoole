@@ -4,10 +4,6 @@
 namespace Ghf;
 
 
-
-use function GuzzleHttp\json_encode;
-use function GuzzleHttp\Psr7\str;
-
 define('DS',DIRECTORY_SEPARATOR);
 define('GF_ROOT',realpath(__DIR__));
 define('APP_ROOT',realpath($_SERVER['DOCUMENT_ROOT']));
@@ -45,16 +41,16 @@ class BootStrap
     public static function Gw(){
         self::init();
         $http = new \Swoole\Http\Server('0.0.0.0', Conf::GetInt('server.port',8080));
-        $http->on('WorkerStart',function ($server, $worker_id){
-            $appNames = Conf::Get('apps','');
-            $apps = explode(',',$appNames);
-
-            $conf = [];
-            foreach ($apps as $app){
-                $conf[$app];
-            }
-            //$server->confs = $conf;
-        });
+//        $http->on('WorkerStart',function ($server, $worker_id){
+//            $appNames = Conf::Get('apps','');
+//            $apps = explode(',',$appNames);
+//
+//            $conf = [];
+//            foreach ($apps as $app){
+//                $conf[$app];
+//            }
+//            //$server->confs = $conf;
+//        });
         $http->on('request',function (\Swoole\Http\Request $req,\Swoole\Http\Response $resp){
             $skey = 'sid';
             $sid = $req->cookie[$skey] ?? "";

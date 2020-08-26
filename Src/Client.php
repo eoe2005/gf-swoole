@@ -4,7 +4,7 @@
 namespace Ghf;
 
 
-use function GuzzleHttp\json_encode;
+
 
 class Client
 {
@@ -33,17 +33,18 @@ class Client
 
     }
     private static function http($host,$cmd,$args){
-        $ch = curl_init($host.$cmd);
-        curl_setopt_array($ch,[
+        var_dump($host.$cmd);
+        $ch = \curl_init($host.$cmd);
+        \curl_setopt_array($ch,[
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_POST => 1,
             CURLOPT_POSTFIELDS => $args,
             CURLOPT_TIMEOUT_MS => 5000
         ]);
         try{
-            $ret = curl_exec($ch);
-            if(curl_errno($ch)){
-                return ['code' => 1005,'msg' => json_encode(curl_getinfo($ch))];
+            $ret = \curl_exec($ch);
+            if(\curl_errno($ch)){
+                return ['code' => 1005,'msg' => \json_encode(curl_getinfo($ch))];
             }
             return json_decode($ret,true);
         }catch (\Exception $e){
