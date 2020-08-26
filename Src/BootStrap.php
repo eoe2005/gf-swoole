@@ -56,7 +56,7 @@ class BootStrap
             $sid = $req->cookie[$skey] ?? "";
             if(!$sid){
                 $sid = md5(time().$req->server['remote_addr']);
-                $resp->cookie($skey,$sid,86400*365);
+                $resp->cookie($skey,$sid,time() + 86400*365,'/');
             }
             $params = array_merge($req->post ?? [],$req->get ?? []);
             $params['session'] = Redis::getCon()->hGetAll($sid);
