@@ -63,38 +63,50 @@ abstract class Action
                 foreach ($rNames as $r){
                     switch ($r){
                         case 'required':
-                            if(!isset($this->_params[$k])){
+                            if(!isset($this->_params[$k]) || $this->_params[$k]){
                                 return $msg.'必填';
                             }
                             break;
                         case 'int':
                             $val = $this->_params[$k] ?? '';
-                            if(!preg_match("/^\d+$/",$val)){
+                            if($val && !preg_match("/^\d+$/",$val)){
                                 return $msg.'必填是数字';
                             }
                             break;
                         case 'array':
                             $val = $this->_params[$k] ?? '';
-                            if(!is_array($val)){
+                            if($val && !is_array($val)){
                                 return $msg.'必填是数组';
                             }
                             break;
                         case 'date':
                             $val = $this->_params[$k] ?? '';
-                            if(!preg_match("/^\d{4}-\d{2}-\d{2}$/",$val)){
+                            if($val && !preg_match("/^\d{4}-\d{2}-\d{2}$/",$val)){
                                 return $msg.'必填是日期';
                             }
                             break;
                         case 'time':
                             $val = $this->_params[$k] ?? '';
-                            if(!preg_match("/^\d{2}:\d{2}:\d{2}$/",$val)){
+                            if($val && !preg_match("/^\d{2}:\d{2}:\d{2}$/",$val)){
                                 return $msg.'必填是时间';
                             }
                             break;
                         case 'datetime':
                             $val = $this->_params[$k] ?? '';
-                            if(!preg_match("/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/",$val)){
+                            if($val && !preg_match("/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/",$val)){
                                 return $msg.'必填是日期和时间';
+                            }
+                            break;
+                        case 'email':
+                            $val = $this->_params[$k] ?? '';
+                            if($val && filter_var($val,FILTER_VALIDATE_EMAIL)){
+                                return $msg.'必填是邮箱';
+                            }
+                            break;
+                        case 'mobile':
+                            $val = $this->_params[$k] ?? '';
+                            if($val && !preg_match("/^1(3|5|7|8)\d{9}$/",$val)){
+                                return $msg.'必填是手机号';
                             }
                             break;
                     }
@@ -107,6 +119,10 @@ abstract class Action
         return $this->_params[$k] ?? $def;
     }
 
+    protected function getSession($k,$v = ''){
+        $ret = $this->_params['session'][$k] ?? $v;
+        return $ret;
+    }
     protected function fail($code,$msg){
         return [
             'code' => $code,

@@ -10,6 +10,9 @@ class Client
 {
     public static function Rpc($app,$cmd,$args){
         $host = self::getHost($app);
+        if(!$host){
+            return ['code' => 1006,'msg' => "接口错误"];
+        }
         $ret = '';
         if(strpos($host,'http') === 0){
             return self::http($host,$cmd,$args);

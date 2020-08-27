@@ -59,7 +59,7 @@ class BootStrap
                 $resp->cookie($skey,$sid,time() + 86400*365,'/');
             }
             $params = array_merge($req->post ?? [],$req->get ?? []);
-            $params['session'] = Redis::getCon()->hGetAll($sid);
+            $params['session'] = Redis::getCon()->hGetAll('session:'.$sid);
             $params['ip'] = $req->server['remote_addr'];
             if($req->files){
                 $files = [];
@@ -76,7 +76,7 @@ class BootStrap
             $name = substr(strstr($url,'/'),1);
             $ret = Client::Rpc($app,$name,$params);
             if(isset($ret['session'])){
-                Redis::getCon()->hMSet($sid,$ret['session']);
+                Redis::getCon()->hMSet('session:'.$sid,$ret['session']);
                 unset($ret['session']);
             }
             $resp->header('Content-Type','application/json');
