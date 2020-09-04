@@ -4,13 +4,58 @@
 namespace Ghf;
 
 
+use Swoole\Http\Response;
+
 abstract class Action
 {
     protected $_server;
+    protected $_req;
+    protected $_resp;
     protected $_session = [];
-    function __construct($server)
+
+    protected $_sid = '';
+
+    protected $_rawSession = false;
+    function __construct($server,\Swoole\Http\Request $req,Response $rep)
     {
         $this->_server = $server;
+        $this->_req = $req;
+        $this->_resp = $rep;
+    }
+
+    protected function session($k,$v = ''){
+        if($this->_rawSession === false){
+            $this->_sid = $this->_req->cookie['sid'] ?? md5(microtime(true).rand(1,99999));
+
+            $this->_rawSession = Redis::getCon('session')->hGetAll('sess:'.$this->_sid);
+
+            if(!isset($this->_req->cookie['sid'])){
+                $this->setCookie('sid',$this->_sid);
+            }
+        }
+        if($v){
+            $this->_rawSession[$k] = $v;
+        }else{
+            return $this->_rawSession[$k] ?? '';
+        }
+    }
+
+    function __destruct()
+    {
+        Redis::getCon('session')->hMSet($this->_sid,$this->_rawSession);
+    }
+
+    /**
+     * 设置COOKIE
+     * @auth 耿鸿飞 <15911185633>
+     * @date 2020/9/4 18:34
+     * @param $k
+     * @param $v
+     * @param string $path
+     * @param int $timeout
+     */
+    protected function setCookie($k,$v,$path = '/',$timeout = 1800){
+        $this->_resp->cookie($k,$v,$timeout,$path);
     }
 
     protected function setSession($data){

@@ -23,7 +23,7 @@ class BootStrap
             if(!isset($params['ip'])){
                 $params['ip'] = $req->server['remote_addr'];
             }
-            $data = self::runAction($http,$req->server['path_info'],$params);
+            $data = self::runAction($http,$req,$resp,$req->server['path_info'],$params);
             $resp->header('Content-Type','application/json');
             $resp->write($data);
         });
@@ -85,7 +85,7 @@ class BootStrap
         $http->start();
     }
 
-    private static function runAction($server,$url,$data){
+    private static function runAction($server,$req,$resp,$url,$data){
         $names = explode('/',$url);
         $names = array_map(function ($v){
             return ucfirst($v);
@@ -101,7 +101,7 @@ class BootStrap
         $className .= 'Action';
         if(class_exists($className)){
             try{
-                $ret = (new $className($server))->execute($data);
+                $ret = (new $className($server,$req,$resp))->execute($data);
             }catch (\Exception $e){
                 $ret = [
                     'code' => 1002,
